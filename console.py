@@ -9,13 +9,19 @@ from models.base_model import BaseModel
 from models import storage
 from models.user import User
 from models.godwin import Godwin
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
+from models.state import State
+from models.city import City
+
 
 class HBNBCommand(cmd.Cmd):
     """
     command interpreter
     """
     prompt = "(godwin) "
-    valid_classes = ["BaseModel", "User", "Godwin"]
+    valid_classes = ["BaseModel", "User", "Godwin", "Amenity", "Place", "Review", "State", "City"]
 
     def do_quit(self, arg):
         """
@@ -120,6 +126,7 @@ class HBNBCommand(cmd.Cmd):
         objects = storage.all()
 
         commands = shlex.split(arg)
+        print(f'your commands = {commands}')
         if len(commands) == 0:
             # no specific class was passed, so all classes are printed
             for key, value in objects.items():
@@ -170,7 +177,64 @@ class HBNBCommand(cmd.Cmd):
                     pass
                 setattr(obj_to_update, attr_name, attr_value)
                 obj_to_update.save()
+    
+    def default(self, arg):
+        """
+        handles default behaviour for invalid syntaxes
+        """
+        arg_list = arg.split('.')
+        # User.all() = ['User', 'all()']
+        # print(f"arg_list = {arg_list}")
 
+        incoming_classname = arg_list[0]
+        # print(f"incoming method class name = {incoming_classname}")
+
+        # splitting tha method all()
+        command = arg_list[1].split('(')
+        # command[0] = all and command[1] = )
+        
+        incoming_method = command[0]
+        # print(f"incoming method = {incoming_method}")
+
+        method_dict = {
+            'all': self.do_all,
+            'show' : self.do_show,
+            'destroy' : self.do_destroy,
+            'update' : self.do_update,
+            'count' : self.do_count
+        }
+        if incoming_method in method_dict.keys():
+            # return something like 'all User' mimicking a method call
+            # self.all(self, User)
+            return method_dict[incoming_method]("{} {}".format(incoming_classname, ''))
+        print("** unknown syntax: {}".format(arg))
+        return False
+
+    def do_count(self, arg):
+        """
+        retrieve the number of instances of a class
+        <class name>.count()
+        """
+        objects = storage.all()
+
+        commands = shlex.split(arg)
+
+        if arg:
+            class_name = commands[0]
+        else:
+            print("** class name missing **")
+        count = 0
+
+        if commands:
+            if class_name in self.valid_classes:
+                for obj in objects.values():
+                    if obj.__class__.__name__ == class_name:
+                        count += 1
+                print(count)
+            else:
+                print("** not **")
+        else:
+            print("** classname doesn't exist **")
 
 
 

@@ -12,5 +12,5 @@ class Review(BaseModel):
         name (str): The name of the review.
     """
     text = ""
-    place_id = "
+    place_id = ""
     user_id = ""
